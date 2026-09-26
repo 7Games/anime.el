@@ -34,6 +34,24 @@
             :initform ""
             :documentation "Contents of the response")))
 
+(defclass anime--entry ()
+  ((name :initarg :name
+         :accessor anime--entry-name
+         :type string
+         :documentation "Name of the anime")
+   (url :initarg :url
+        :accessor anime--entry-url
+        :type string
+        :documentation "URL where it is")))
+
+;; Assuming it looks something like this
+;; (a ((href . "[URL]") (title . "[ENG NAME?]") (class . "dynamic-name") (data-jname . "[JP NAME?]")) "[ENG NAME AGAIN?]")
+(defun anime--parse-entry-link (link)
+  (let* ((data (nth 1 link))
+         (url (cdr (nth 0 data)))
+         (eng-name (cdr (nth 1 data))))
+    (make-instance 'anime--entry :name eng-name :url url)))
+
 (defun anime--get (url)
   "Returns request to a given `URL'"
   (with-current-buffer (url-retrieve-synchronously url t)
