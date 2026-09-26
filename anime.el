@@ -34,9 +34,6 @@
             :initform ""
             :documentation "Contents of the response")))
 
-;; FIXME: Body get's turned into a string
-;; DESC:  For some reason the body becomes a string
-;;        of lists? I have no idea why.
 (defun anime--get (url)
   "Returns request to a given `URL'"
   (with-current-buffer (url-retrieve-synchronously url t)
