@@ -43,11 +43,6 @@
                        :content (buffer-substring-no-properties url-http-end-of-headers (point-max)))
       (kill-buffer))))
 
-(defun anime--html-string-to-list (content)
-  (with-temp-buffer
-    (insert content)
-    (libxml-parse-html-region (point-min) (point-max))))
-
 (defun anime--minibuffer-get-choice (question choices)
   "Returns user selected to given list `CHOICES'"
   (completing-read (concat question ": ") choices))
