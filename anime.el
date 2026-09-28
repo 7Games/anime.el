@@ -84,23 +84,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; TESTING ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(setq search (anime--get (concat search_api (anime--fixup-string (anime--minibuffer-ask "Enter anime name")))))
-
-(setq content (anime--response-content search))
-
 (require 'dom)
 
-(setq links (with-temp-buffer
-              (insert content)
-              (let* ((dom (libxml-parse-html-region (point-min) (point-max)))
-                     (all-divs (dom-by-tag dom 'div))
-                     (target-element (dom-by-class dom "dynamic-name"))) ;; link name for some reason
-                target-element)))
-
-(setq entries (mapcar 'anime--parse-entry-link links))
-
-(setq names (mapcar (lambda (x) (list (anime--entry-name x))) entries))
-
-(anime--minibuffer-get-choice "pick one lmao" names)
+(defun anime/test/get-anime-list ()
+  (interactive)
+  (setq search (anime--get (concat search_api (anime--fixup-string (anime--minibuffer-ask "Enter anime name")))))
+  (setq content (anime--response-content search))
+  (setq links (with-temp-buffer
+                (insert content)
+                (let* ((dom (libxml-parse-html-region (point-min) (point-max)))
+                       (all-divs (dom-by-tag dom 'div))
+                       (target-element (dom-by-class dom "dynamic-name"))) ;; link name for some reason
+                  target-element)))
+  (setq entries (mapcar 'anime--parse-entry-link links))
+  (setq names (mapcar (lambda (x) (list (anime--entry-name x))) entries))
+  (anime--minibuffer-get-choice "Pick one: " names))
 
 ;;; anime.el ends here
