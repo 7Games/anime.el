@@ -61,18 +61,25 @@
                        :content (buffer-substring-no-properties url-http-end-of-headers (point-max)))
       (kill-buffer))))
 
+;; Was gonna be generic but eh let's just hard code some stuff ;)
+;; also holy unreadable
 (defun anime--minibuffer-get-choice (question choices)
-  "Returns user selected to given list `CHOICES'"
-  ;; Stop completing-read from sorting the list
-  ;; Courtesy of https://emacs.stackexchange.com/questions/41801/how-to-stop-completing-read-ivy-completing-read-from-sorting
-  (let* ((completion-table
+  "Returns user selection to given list `CHOICES'"
+  ;; Embed (hide) url in the list so we can grab it later
+  (let* ((choices-but-cool (mapcar (lambda (e)
+                                     (concat (anime--entry-name e)
+                                             (propertize (concat "|,|" (anime--entry-url e)) 'invisible t)))
+                                   choices))
+         ;; Stop completing-read from sorting the list
+         ;; Courtesy of https://emacs.stackexchange.com/questions/41801/how-to-stop-completing-read-ivy-completing-read-from-sorting
+         (completion-table
           (lambda (string pred action)
             (if (eq action 'metadata)
                 '(metadata (display-sort-function . identity)
                            (cycle-sort-function . identity))
               (complete-with-action
-               action choices string pred)))))
-    (completing-read question completion-table)))
+               action choices-but-cool string pred)))))
+    (completing-read question completion-table nil t)))
 
 (defun anime--fixup-string (str)
   "Returns a url acceptable string based off `STR'"
@@ -105,7 +112,8 @@
 (defun anime/test/get-anime-list ()
   (interactive)
   (setq entries (anime--get-anime-list))
-  (setq names (mapcar (lambda (x) (list (anime--entry-name x))) entries))
-  (anime--minibuffer-get-choice "Pick one: " names))
+  (setq chosen-option (split-string  (anime--minibuffer-get-choice "Pick one: " entries) "|,|")))
+
+(anime/test/get-anime-list)
 
 ;;; anime.el ends here
