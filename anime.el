@@ -63,11 +63,20 @@
 
 (defun anime--minibuffer-get-choice (question choices)
   "Returns user selected to given list `CHOICES'"
-  (completing-read (concat question ": ") choices))
 
 (defun anime--minibuffer-ask (question)
   "Returns user entered string to a given `QUESTION'"
   (read-string (concat question ": ")))
+  ;; Stop completing-read from sorting the list
+  ;; Courtesy of https://emacs.stackexchange.com/questions/41801/how-to-stop-completing-read-ivy-completing-read-from-sorting
+  (let* ((completion-table
+          (lambda (string pred action)
+            (if (eq action 'metadata)
+                '(metadata (display-sort-function . identity)
+                           (cycle-sort-function . identity))
+              (complete-with-action
+               action choices string pred)))))
+    (completing-read question completion-table)))
 
 (defun anime--fixup-string (str)
   "Returns a url acceptable string based off `STR'"
