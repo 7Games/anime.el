@@ -10,6 +10,6 @@ use emacs to search for anime and watch it in mpv
 
  - [x] Get requests from hianime
  - [x] Convert response to list of anime
- - [ ] Get user to pick anime
+ - [x] Get user to pick anime
  - [ ] Get episode list
  - [ ] Launch MPV with chosen episode
