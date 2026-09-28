@@ -20,8 +20,8 @@
 (defconst *ANIME//VIDEO-PLAYER* "mpv")
 (defconst *ANIME//USER-AGENT* "anime.el firefox")
 
-(setq base_api "https://hianime.at")
-(setq search_api (concat base_api "/search?keyword="))
+(defconst **ANIME//BASEURL** "https://hianime.at")
+(defconst **ANIME//SEARCH** (concat **ANIME//BASEURL** "/search?keyword="))
 
 (defclass anime--response ()
   ((code :initarg :code
@@ -78,21 +78,33 @@
   "Returns a url acceptable string based off `STR'"
   (replace-regexp-in-string " " "%20" (downcase str)))
 
+;; Request part
+
+(defun anime--request-anime-list ()
+  "GET a user chosen list of anime"
+  (anime--get (concat **ANIME//SEARCH** (anime--fixup-string (read-string "What anime? ")))))
+
+(defun anime--response-to-entry (resp)
+  "Converts `RESP' into a list of anime--entry"
+  (let ((content (anime--response-content resp)))
+    (with-temp-buffer
+      (insert content)
+      (let* ((dom (libxml-parse-html-region (point-min) (point-max)))
+             (all-divs (dom-by-tag dom 'div))
+             (target-element (dom-by-class dom "dynamic-name"))) ;; link name for some reason
+        (mapcar 'anime--parse-entry-link target-element)))))
+
+(defun anime--get-anime-list ()
+  "Returns list from our anime source"
+  (anime--response-to-entry (anime--request-anime-list)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; TESTING ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (require 'dom)
 
 (defun anime/test/get-anime-list ()
   (interactive)
-  (setq search (anime--get (concat search_api (anime--fixup-string (read-string "What anime? ")))))
-  (setq content (anime--response-content search))
-  (setq links (with-temp-buffer
-                (insert content)
-                (let* ((dom (libxml-parse-html-region (point-min) (point-max)))
-                       (all-divs (dom-by-tag dom 'div))
-                       (target-element (dom-by-class dom "dynamic-name"))) ;; link name for some reason
-                  target-element)))
-  (setq entries (mapcar 'anime--parse-entry-link links))
+  (setq entries (anime--get-anime-list))
   (setq names (mapcar (lambda (x) (list (anime--entry-name x))) entries))
   (anime--minibuffer-get-choice "Pick one: " names))
 
